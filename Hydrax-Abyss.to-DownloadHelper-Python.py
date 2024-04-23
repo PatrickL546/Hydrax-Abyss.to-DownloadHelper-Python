@@ -1,5 +1,7 @@
 from base64 import b64decode
+from os.path import abspath
 from os.path import exists
+from os.path import join
 from requests import get
 from json import loads
 from re import search
@@ -53,9 +55,11 @@ Separate ID with comma ","
             # "4" = 1080p
             max_quality = "4"  # Set max resolution for automatic selection
             manual = False  # Set "True" to select resolution manually
+            download_directory = r""  # Set download directory
 
             quality = max([i for i in resolution_option if i <= max_quality])
             file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
+            download_path = join(abspath(download_directory), file_name)
 
             if manual:
                 print(f"""
@@ -72,10 +76,11 @@ Available resolution {available_resolution}
                     if resolution_selected in resolution_option:
                         quality = resolution_selected
                         file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
+                        download_path = join(abspath(download_directory), file_name)
                         break
 
-            if exists(file_name):
-                print(f"{file_name} already exists")
+            if exists(download_path):
+                print(f"{download_path} already exists")
             else:
                 atob_domain, atob_id = [
                     loads(
@@ -96,10 +101,10 @@ Available resolution {available_resolution}
                 response = get(url, headers=headers, stream=True)
 
                 with tqdm.wrapattr(
-                    open(file_name, "wb"),
+                    open(download_path, "wb"),
                     "write",
                     miniters=1,
-                    desc=file_name,
+                    desc=download_path,
                     total=int(response.headers.get("content-length", 0)),
                 ) as f:
                     for chunk in response.iter_content(chunk_size=64 * 1024):
