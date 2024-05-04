@@ -110,10 +110,9 @@ Available resolution {available_resolution}
                     for chunk in response.iter_content(chunk_size=64 * 1024):
                         f.write(chunk)
         except Exception as err:
-            error.append(err)
+            error.append(f"\nError downloading: {vid_ID}\n{err}")
 
     for i in error:
-        print(f"\nError downloading: {vid_ID}")
         print(i)
 
 
