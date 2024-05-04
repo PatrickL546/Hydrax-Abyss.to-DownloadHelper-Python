@@ -16,7 +16,7 @@ Simple Python program that lets you download Hydrax/Abyss.to videos
 
 - Separate the Vid_ID with a comma "," to download multiple videos
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/5b555ce7-c7ea-4a0a-8d5e-b79440a98e62)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/482e36df-afae-469f-b042-b55e58881279)
 
 - Manual mode
 
