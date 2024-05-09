@@ -4,27 +4,29 @@ Simple Python program that lets you download Hydrax/Abyss.to videos
 
 ## Requirements
 
-- Use my Userscript [Hydrax-Abyss.to-DownloadHelper](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper) to easily get Vid_ID of the video
+- Vid_ID of the video
 
-- Or read my [guide](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to) on how to get the Vid_ID
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/5137b2f5-4c4a-45a9-bdc5-022de902a604)
 
-- Install additional library listed in requirements.txt
+- Use my [Userscript](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript)
+
+- Or read my [Guide](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to)
+
+- Install additional library listed in `requirements.txt`
 
 ## Usage
 
-- Enter the Vid_ID of the video and that's it!
+- Just enter the Vid_ID to download them all at once
 
-- Separate the Vid_ID with a comma "," to download multiple videos
-
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/482e36df-afae-469f-b042-b55e58881279)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/56861fa5-8925-43bb-b3bf-1b845e725031)
 
 - Manual mode
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/51da0d7c-a611-41ab-804c-33272fe55dc4)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/37a38ad9-9c16-4902-aa80-8ee2e41a450e)
 
 ## Customize
 
-- You can open the program in a text editor and change these settings
+- Open `Hydrax-Abyss.to-DownloadHelper-Python.py` in a text editor to change settings
 
 ```Python
 # "1" = 360p
