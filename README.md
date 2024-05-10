@@ -20,7 +20,7 @@
 
 - Open a terminal and navigate inside the folder then run `python -m pip install -r requirements.txt`
 
-- Run `Hydrax-Abyss.to-DownloadHelper-Python.py`
+- Run `Hydrax-Abyss.to-DownloadHelper.py`
 
 ## Usage
 
@@ -34,7 +34,7 @@
 
 ## Customize
 
-- Open `Hydrax-Abyss.to-DownloadHelper-Python.py` in a text editor to change settings
+- Open `Hydrax-Abyss.to-DownloadHelper.py` in a text editor to change settings
 
 ```Python
 # "1" = 360p
