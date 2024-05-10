@@ -1,16 +1,12 @@
-# About The Project
+# [Info](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to)
 
-Simple Python program that lets you download Hydrax/Abyss.to videos
+# [Userscript downloader](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript)
 
 ## Requirements
 
 - Vid_ID of the video
 
 ![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/5137b2f5-4c4a-45a9-bdc5-022de902a604)
-
-- Use my [Userscript](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript)
-
-- Or read my [Guide](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to)
 
 - Install additional library listed in `requirements.txt`
 
