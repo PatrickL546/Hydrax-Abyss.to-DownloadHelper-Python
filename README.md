@@ -14,6 +14,18 @@ Simple Python program that lets you download Hydrax/Abyss.to videos
 
 - Install additional library listed in `requirements.txt`
 
+## Installation
+
+- Download [Python](https://www.python.org/)
+
+- Download the project
+
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/13cf5786-c03b-4653-8a67-278c682db6ea)
+
+- Open a terminal and navigate inside the folder then run `python -m pip install -r requirements.txt`
+
+- Run `Hydrax-Abyss.to-DownloadHelper-Python.py`
+
 ## Usage
 
 - Just enter the Vid_ID to download them all at once
