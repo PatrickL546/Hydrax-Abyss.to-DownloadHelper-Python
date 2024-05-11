@@ -16,7 +16,9 @@
 
 - Download the project
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/13cf5786-c03b-4653-8a67-278c682db6ea)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/d38a651a-0f15-4d1d-9434-902456d8a464)
+
+- Extract the ZIP file
 
 - Open a terminal and navigate inside the folder then run `python -m pip install -r requirements.txt`
 
@@ -26,11 +28,11 @@
 
 - Just enter the Vid_ID to download them all at once
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/56861fa5-8925-43bb-b3bf-1b845e725031)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/1113869e-6a4a-494f-8311-f26f4e8cbb64)
 
 - Manual mode
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/37a38ad9-9c16-4902-aa80-8ee2e41a450e)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/c569c229-3f9c-489d-8f64-3ac0a378b9bb)
 
 ## Customize
 
