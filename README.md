@@ -44,6 +44,6 @@
 # "3" = 720p
 # "4" = 1080p
 max_quality = "4"  # Set max resolution for automatic selection
-manual = False  # Set "True" to select resolution manually
+automatic = True  # Set "False" to select resolution manually
 download_directory = r""  # Set download directory
 ```
