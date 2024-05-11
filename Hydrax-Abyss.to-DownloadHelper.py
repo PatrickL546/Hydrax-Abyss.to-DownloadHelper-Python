@@ -1,14 +1,13 @@
-from concurrent.futures import ThreadPoolExecutor
 from base64 import b64decode
-from os.path import abspath
-from os.path import exists
-from os.path import join
-from requests import get
+from concurrent.futures import ThreadPoolExecutor
 from json import loads
+from os import system
+from os.path import abspath, exists, join
 from re import search
+from requests import get
 from tqdm import tqdm
 
-
+version = "1.0"
 # "1" = 360p
 # "2" = 480p
 # "3" = 720p
@@ -16,6 +15,7 @@ from tqdm import tqdm
 max_quality = "4"  # Set max resolution for automatic selection
 manual = False  # Set "True" to select resolution manually
 download_directory = r""  # Set download directory
+
 
 def download(vid_ID):
     try:
@@ -84,37 +84,36 @@ def download(vid_ID):
     except Exception as err:
         print(f"\nError downloading: {vid_ID}\n{err}")
 
+
 def auto():
     print("""[Automatic Mode]
 Enter Vid_ID. ie. "?v=VswFqVUmq" without "?v="
-Separate ID with comma ","
+Separate ID with space
 """)
 
     while True:
-        vid_ID_list = input("Enter Vid_ID: ")
+        vid_ID_list = list(filter(None, input("Enter Vid_ID: ").split(" ")))
         if vid_ID_list:
             break
 
-    vid_ID_list = [i.strip() for i in vid_ID_list.split(",")]
-
     with ThreadPoolExecutor() as pool:
-       pool.map(download, vid_ID_list)
+        pool.map(download, vid_ID_list)
+
 
 def main():
+    system(f"title Hydrax-Abyss.to-DownloadHelper {version}")
     if not manual:
         auto()
     else:
         print("""[Manual Mode] Simultaneous download not available
 Enter Vid_ID. ie. "?v=VswFqVUmq" without "?v="
-Separate ID with comma ","
+Separate ID with space
 """)
 
         while True:
-            vid_ID_list = input("Enter Vid_ID: ")
+            vid_ID_list = list(filter(None, input("Enter Vid_ID: ").split(" ")))
             if vid_ID_list:
                 break
-
-        vid_ID_list = [i.strip() for i in vid_ID_list.split(",")]
 
         error = []
         for vid_ID in vid_ID_list:
