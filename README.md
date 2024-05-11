@@ -4,7 +4,7 @@
 
 ## Requirements
 
-- Vid_ID of the video
+- Vid_ID of the video. Use my [Userscript](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript) or read [this](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to) to get it
 
 ![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/5137b2f5-4c4a-45a9-bdc5-022de902a604)
 
