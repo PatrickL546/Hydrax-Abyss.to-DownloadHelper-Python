@@ -28,6 +28,8 @@
 
 - Just enter the Vid_ID to download them all at once
 
+- If the download was not completed. Download will continue where it left off
+
 ![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/9da4832f-b07c-4c6c-82e4-cc8f91e103d9)
 
 - Manual mode
