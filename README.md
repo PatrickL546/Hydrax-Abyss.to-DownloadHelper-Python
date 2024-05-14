@@ -14,11 +14,11 @@
 
 - Download [Python](https://www.python.org/)
 
-- Download the project
+- Get the latest release [here](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/releases/latest)
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/d38a651a-0f15-4d1d-9434-902456d8a464)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/21f93cf9-ba0b-470f-84dd-8a5a5d0ac3f4)
 
-- Extract the ZIP file
+- Extract the archive
 
 - Open a terminal and navigate inside the folder then run `python -m pip install -r requirements.txt`
 
