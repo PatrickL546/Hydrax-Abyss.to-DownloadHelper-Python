@@ -28,11 +28,11 @@
 
 - Just enter the Vid_ID to download them all at once
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/1113869e-6a4a-494f-8311-f26f4e8cbb64)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/9da4832f-b07c-4c6c-82e4-cc8f91e103d9)
 
 - Manual mode
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/c569c229-3f9c-489d-8f64-3ac0a378b9bb)
+![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/c6bcf40d-dbfd-4a18-8e2b-b71fc2b98f28)
 
 ## Customize
 
