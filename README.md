@@ -20,7 +20,7 @@
 
 - Extract the archive
 
-- Open a terminal and navigate inside the folder then run `python -m pip install -r requirements.txt`
+- Install the requirements. [How to install requirements](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-files)
 
 - Run `Hydrax-Abyss.to-DownloadHelper.py`
 
