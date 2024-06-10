@@ -8,7 +8,7 @@ from re import search
 from requests import get
 from tqdm import tqdm
 
-version = "1.2"
+version = "1.3"
 # "1" = 360p
 # "2" = 480p
 # "3" = 720p
@@ -198,4 +198,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    input("\nPress Enter to exit\n")
+    input("\n\n\n\n\n\n\n\n\n\nPress Enter to exit\n")
