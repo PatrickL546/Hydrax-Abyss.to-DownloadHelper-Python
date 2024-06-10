@@ -14,7 +14,7 @@
 
 - Download [Python](https://www.python.org/)
 
-- Get the latest release [here](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/releases/latest)
+- Get the latest release [here](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/releases/latest). Download one of the `Source code`
 
 ![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/21f93cf9-ba0b-470f-84dd-8a5a5d0ac3f4)
 
