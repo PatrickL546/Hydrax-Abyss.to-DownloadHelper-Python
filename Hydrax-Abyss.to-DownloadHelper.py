@@ -57,7 +57,7 @@ def download(vid_ID):
         vid_ID_text = get(vid_ID_url).text
         piece_length_json = loads(
             search(
-                r'({"pieceLength.+?})',
+                r'({"pieceLength.+?});',
                 vid_ID_text,
             ).group(1)
         )
