@@ -8,7 +8,7 @@ from re import search
 from requests import get
 from tqdm import tqdm
 
-version = "1.3"
+version = "1.4"
 # "1" = 360p
 # "2" = 480p
 # "3" = 720p
@@ -117,6 +117,8 @@ Available resolution {available_resolution}
                     file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
                     download_path = join(abspath(download_directory), file_name)
                     break
+                else:
+                    print("Error: Select an available resolution")
 
         if not exists(download_path):
             byte_range = "0"
@@ -136,7 +138,7 @@ Available resolution {available_resolution}
             )
         else:
             downloaded_size = getsize(download_path)
-            if downloaded_size == int(piece_length[quality]):
+            if downloaded_size >= int(piece_length[quality]):
                 print(f"\n{file_name} already exists")
             else:
                 byte_range = downloaded_size
@@ -160,9 +162,7 @@ Available resolution {available_resolution}
 
 
 def get_input():
-    print("""Enter Vid_ID. ie. "?v=VswFqVUmq" without "?v="
-Separate ID with space
-""")
+    print("To download multiple videos at once, separate Vid_ID with space\n")
 
     while True:
         vid_ID_list = list(filter(None, input("Enter Vid_ID: ").split(" ")))
