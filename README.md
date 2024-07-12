@@ -4,9 +4,9 @@
 
 ## Requirements
 
-- Vid_ID of the video. Use my [Userscript](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript) or read [this](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to) to get it
+- Vid_ID of the video. Use my [Userscript](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript) or read [my guide](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to) to get it
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/5137b2f5-4c4a-45a9-bdc5-022de902a604)
+![image](https://github.com/user-attachments/assets/c4499f2f-6593-45af-8a1d-cf257347fc89)
 
 - Install additional library listed in `requirements.txt`
 
@@ -14,7 +14,7 @@
 
 - Download [Python](https://www.python.org/)
 
-- Get the latest release [here](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/releases/latest). Download one of the `Source code`
+- Get the latest release [here](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/releases/latest). Download `Source code` zip or tar.gz
 
 - Extract the archive
 
@@ -26,13 +26,13 @@
 
 - Just enter the Vid_ID to download them all at once
 
-- If the download was not completed. Download will continue where it left off
+- If the download was not completed. It will continue where it left off
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/9da4832f-b07c-4c6c-82e4-cc8f91e103d9)
+![image](https://github.com/user-attachments/assets/b4eb4462-42ba-43da-8a5b-626c63c44bac)
 
 - Manual mode
 
-![image](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/assets/75874561/c6bcf40d-dbfd-4a18-8e2b-b71fc2b98f28)
+![image](https://github.com/user-attachments/assets/c5c73aba-3689-4178-82b0-5263f770c431)
 
 ## Customize
 
