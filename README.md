@@ -8,6 +8,8 @@
 
 ![image](https://github.com/user-attachments/assets/c4499f2f-6593-45af-8a1d-cf257347fc89)
 
+- Windows 10 with latest updates
+
 - Install additional library listed in `requirements.txt`
 
 ## Installation
