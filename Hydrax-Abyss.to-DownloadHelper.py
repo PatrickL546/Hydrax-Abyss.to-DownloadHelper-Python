@@ -9,7 +9,7 @@ from time import sleep
 from requests import RequestException, Timeout, get
 from tqdm import tqdm
 
-version = "1.5"
+version = "v1.6"
 # 1 = 360p
 # 2 = 480p
 # 3 = 720p
@@ -21,6 +21,7 @@ request_timeout = 180                 # Seconds to wait between bytes before tim
 request_retry = 60                    # Retry attempts
 request_wait = 6                      # Seconds to wait before retrying
 error_file = "Abyss_error.log"        # File name of error log
+enable_error_log = True               # Enable error logging to file
 
 turbo = False                         # Set "True" to multithread download, uses `max_quality` option
 turbo_squared = False                 # Set "True" to download all Vid_ID at the same time
@@ -39,8 +40,9 @@ turbo_fragment = 60                   # Number of fragment files the video will 
 
 
 def log_error(err):
-    with open(error_file, "a") as f:
-        f.write(f"{err}\n")
+    if enable_error_log:
+        with open(error_file, "a") as f:
+            f.write(f"{err}\n")
 
 
 def get_turbo_download(vid_ID):
@@ -50,13 +52,15 @@ def get_turbo_download(vid_ID):
         for i in range(request_retry):
             i += 1
             if i == request_retry:
-                raise Exception("\nReached max retry")
+                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}")
 
             try:
                 r = get(vid_ID_url, timeout=request_timeout)
 
                 if r.status_code != 200:
-                    print(f"\nRetrying {i}/{request_retry}... {vid_ID_url}")
+                    print(
+                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}"
+                    )
                     sleep(request_wait)
                 else:
                     vid_ID_text = r.text
@@ -65,9 +69,9 @@ def get_turbo_download(vid_ID):
             except Timeout as err:
                 print(
                     error := f"""
-Connection timed out - get_turbo_download - {vid_ID_url} - {vid_ID}
+{bcolors.WARNING}Connection timed out - get_turbo_download - {vid_ID_url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {vid_ID_url}
+Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -75,9 +79,9 @@ Retrying {i}/{request_retry}... {vid_ID_url}
             except RequestException as err:
                 print(
                     error := f"""
-Request exception - get_turbo_download - {vid_ID_url} - {vid_ID}
+{bcolors.WARNING}Request exception - get_turbo_download - {vid_ID_url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {vid_ID_url}
+Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -102,7 +106,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}
             ).group(1)
         )
 
-        print(f"\nGetting content length: {vid_ID}")
+        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}")
 
         resolution_option = {}
         quality_prefix = {}
@@ -132,7 +136,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}
         if exists(download_path) and getsize(download_path) == int(
             piece_length[quality]
         ):
-            print(f"\n{file_name} already exists")
+            print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}")
         else:
             if split_by_bytes:
                 chunk_range, chunk_size = generate_range_byte(
@@ -189,11 +193,15 @@ Retrying {i}/{request_retry}... {vid_ID_url}
 
                             if count + 1 == len(chunk_range):
                                 if downloaded_size == last_chunk_size:
-                                    print(f"\n{fragment_file_name} already exists")
+                                    print(
+                                        f"\n{bcolors.OKGREEN}{fragment_file_name} already exists{bcolors.ENDC}"
+                                    )
                                     continue
                             else:
                                 if downloaded_size == chunk_size:
-                                    print(f"\n{fragment_file_name} already exists")
+                                    print(
+                                        f"\n{bcolors.OKGREEN}{fragment_file_name} already exists{bcolors.ENDC}"
+                                    )
                                     continue
 
                             write_method = "wb"
@@ -225,9 +233,15 @@ Retrying {i}/{request_retry}... {vid_ID_url}
                             ok_fragment += 1
 
                 if ok_fragment != len(fragment_list):
-                    print(f"\nFragments not verified, retrying: {vid_ID}")
+                    print("\n" * 10)
+                    print(
+                        f"{bcolors.WARNING}Fragments not verified, retrying: {vid_ID}{bcolors.ENDC}"
+                    )
+                    print("\n" * 5)
                 else:
-                    print(f"\nVerified, merging: {vid_ID}")
+                    print("\n" * 10)
+                    print(f"{bcolors.OKGREEN}Verified, merging: {vid_ID}{bcolors.ENDC}")
+                    print("\n" * 5)
 
                     try:
                         with open(download_path, "wb") as out_file:
@@ -238,8 +252,8 @@ Retrying {i}/{request_retry}... {vid_ID_url}
                     except Exception as err:
                         print(
                             error := f"""
-Failed to merge, retrying: {vid_ID} - get_turbo_download
-{err}
+{bcolors.WARNING}Failed to merge, retrying: {vid_ID} - get_turbo_download
+{err}{bcolors.ENDC}
 """
                         )
                         log_error(error)
@@ -253,8 +267,8 @@ Failed to merge, retrying: {vid_ID} - get_turbo_download
                             except Exception as err:
                                 print(
                                     error := f"""
-Failed to delete: {i} - get_turbo_download
-{err}
+{bcolors.FAIL}Failed to delete: {i} - get_turbo_download
+{err}{bcolors.ENDC}
                                     """
                                 )
                                 log_error(error)
@@ -266,8 +280,8 @@ Failed to delete: {i} - get_turbo_download
     except Exception as err:
         print(
             error := f"""
-Error downloading: {vid_ID} - get_turbo_download
-{err}
+{bcolors.FAIL}Error downloading: {vid_ID} - get_turbo_download
+{err}{bcolors.ENDC}
 """
         )
         log_error(error)
@@ -294,7 +308,7 @@ def start_download(
         for i in range(request_retry):
             i += 1
             if i == request_retry:
-                raise Exception("\nReached max retry")
+                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}")
 
             try:
                 r = get(url, headers=headers, stream=True, timeout=request_timeout)
@@ -312,7 +326,9 @@ def start_download(
                         f.write(chunk)
 
                 if r.status_code != 200 and r.status_code != 206:
-                    print(f"\nRetrying {i}/{request_retry}... {url}")
+                    print(
+                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {url}{bcolors.ENDC}"
+                    )
                     sleep(request_wait)
                 else:
                     break
@@ -320,9 +336,9 @@ def start_download(
             except Timeout as err:
                 print(
                     error := f"""
-Connection timed out - start_download - {url} - {vid_ID}
+{bcolors.WARNING}Connection timed out - start_download - {url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {url}
+Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -330,9 +346,9 @@ Retrying {i}/{request_retry}... {url}
             except RequestException as err:
                 print(
                     error := f"""
-Request exception - start_download - {url} - {vid_ID}
+{bcolors.WARNING}Request exception - start_download - {url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {url}
+Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -340,8 +356,8 @@ Retrying {i}/{request_retry}... {url}
     except Exception as err:
         print(
             error := f"""
-Error downloading: {vid_ID} - start_download
-{err}
+{bcolors.FAIL}Error downloading: {vid_ID} - start_download
+{err}{bcolors.ENDC}
 """
         )
         log_error(error)
@@ -354,13 +370,15 @@ def download(vid_ID):
         for i in range(request_retry):
             i += 1
             if i == request_retry:
-                raise Exception("\nReached max retry")
+                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}")
 
             try:
                 r = get(vid_ID_url, timeout=request_timeout)
 
                 if r.status_code != 200:
-                    print(f"\nRetrying {i}/{request_retry}... {vid_ID_url}")
+                    print(
+                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}"
+                    )
                     sleep(request_wait)
                 else:
                     vid_ID_text = r.text
@@ -369,9 +387,9 @@ def download(vid_ID):
             except Timeout as err:
                 print(
                     error := f"""
-Connection timed out - download - {vid_ID_url} - {vid_ID}
+{bcolors.WARNING}Connection timed out - download - {vid_ID_url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {vid_ID_url}
+Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -379,9 +397,9 @@ Retrying {i}/{request_retry}... {vid_ID_url}
             except RequestException as err:
                 print(
                     error := f"""
-Request exception - download - {vid_ID_url} - {vid_ID}
+{bcolors.WARNING}Request exception - download - {vid_ID_url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {vid_ID_url}
+Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -406,7 +424,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}
             ).group(1)
         )
 
-        print(f"\nGetting content length: {vid_ID}")
+        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}")
 
         resolution_option = {}
         quality_prefix = {}
@@ -456,7 +474,7 @@ Available resolution {available_resolution}
                     download_path = join(abspath(download_directory), file_name)
                     break
                 else:
-                    print("Select a valid option")
+                    print(f"{bcolors.WARNING}Select a valid option{bcolors.ENDC}")
 
         if not exists(download_path):
             byte_range = "0-"
@@ -476,7 +494,7 @@ Available resolution {available_resolution}
         else:
             downloaded_size = getsize(download_path)
             if downloaded_size == int(piece_length[quality]):
-                print(f"\n{file_name} already exists")
+                print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}")
             else:
                 byte_range = f"{downloaded_size}-"
                 write_method = "ab"
@@ -496,8 +514,8 @@ Available resolution {available_resolution}
     except Exception as err:
         print(
             error := f"""
-Error downloading: {vid_ID} - download
-{err}
+{bcolors.FAIL}Error downloading: {vid_ID} - download
+{err}{bcolors.ENDC}
 """
         )
         log_error(error)
@@ -535,13 +553,15 @@ def get_content_length(atob_domain, quality_prefix, atob_id):
     for i in range(request_retry):
         i += 1
         if i == request_retry:
-            raise Exception("\nReached max retry")
+            raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}")
 
         try:
             r = get(url, headers=headers, timeout=request_timeout)
 
             if r.status_code != 200 and r.status_code != 206:
-                print(f"\nRetrying {i}/{request_retry}... {url}")
+                print(
+                    f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {url}{bcolors.ENDC}"
+                )
                 sleep(request_wait)
             else:
                 content_length = str(r.headers["Content-Range"]).split("/")[1]
@@ -550,9 +570,9 @@ def get_content_length(atob_domain, quality_prefix, atob_id):
         except Timeout as err:
             print(
                 error := f"""
-Connection timed out - get_content_length - {url}
+{bcolors.WARNING}Connection timed out - get_content_length - {url}
 {err}
-Retrying {i}/{request_retry}... {url}
+Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
 """
             )
             log_error(error)
@@ -560,9 +580,9 @@ Retrying {i}/{request_retry}... {url}
         except RequestException as err:
             print(
                 error := f"""
-Request exception - get_content_length - {url}
+{bcolors.WARNING}Request exception - get_content_length - {url}
 {err}
-Retrying {i}/{request_retry}... {url}
+Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
 """
             )
             log_error(error)
@@ -581,10 +601,11 @@ def get_input():
 
 
 def turbo_download():
-    print("""[Turbo Mode] Multithreaded download
-Abyss fragments by default are stored in "%TEMP%\\abyss_fragments"
+    print(f"""[Turbo Mode]
+{bcolors.WARNING}Abyss fragments by default are stored in "%TEMP%\\abyss_fragments"
 If fragments failed to get deleted, its data is wiped to save space
-Set `turbo_squared = False` if you are having problems
+Download might slow down, restarting the program might help
+Set `turbo_squared = False` if you are having problems{bcolors.ENDC}
 """)
 
     vid_ID_list = get_input()
@@ -607,7 +628,9 @@ def automatic_download():
 
 
 def manual_download():
-    print("[Manual Mode] Simultaneous download not available")
+    print(
+        f"[Manual Mode] {bcolors.WARNING}Simultaneous download not available{bcolors.ENDC}"
+    )
 
     vid_ID_list = get_input()
 
@@ -615,8 +638,29 @@ def manual_download():
         download(vid_ID)
 
 
+def version_check():
+    try:
+        r = get(
+            "https://api.github.com/repos/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Python/releases/latest",
+            timeout=3,
+        )
+
+        online_version = r.json()["name"]
+        new_version_link = r.json()["html_url"]
+
+        if online_version > version:
+            print(
+                f"{bcolors.OKGREEN}New version available: {online_version}{bcolors.ENDC}"
+            )
+            print(f"{bcolors.UNDERLINE}{new_version_link}{bcolors.ENDC}")
+
+    except Exception:
+        print(f"{bcolors.FAIL}Failed to check for update{bcolors.ENDC}")
+
+
 def main():
     system(f"title Hydrax-Abyss.to-DownloadHelper {version}")
+    version_check()
 
     if turbo:
         turbo_download()
@@ -628,6 +672,17 @@ def main():
 
 
 if __name__ == "__main__":
+
+    class bcolors:
+        HEADER = "\033[95m"
+        OKBLUE = "\033[94m"
+        OKGREEN = "\033[92m"
+        WARNING = "\033[93m"
+        FAIL = "\033[91m"
+        BOLD = "\033[1m"
+        UNDERLINE = "\033[4m"
+        ENDC = "\033[0m"
+
     main()
-    print("\n" * 15)
-    input("Press Enter to exit\n")
+    print("\n" * 5)
+    input("Done! press Enter to exit\n")
