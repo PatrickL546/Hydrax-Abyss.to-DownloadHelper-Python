@@ -52,14 +52,14 @@ def get_turbo_download(vid_ID):
         for i in range(request_retry):
             i += 1
             if i == request_retry:
-                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}")
+                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}\n")
 
             try:
                 r = get(vid_ID_url, timeout=request_timeout)
 
                 if r.status_code != 200:
                     print(
-                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}"
+                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}\n"
                     )
                     sleep(request_wait)
                 else:
@@ -106,7 +106,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             ).group(1)
         )
 
-        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}")
+        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}\n")
 
         resolution_option = {}
         quality_prefix = {}
@@ -136,7 +136,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
         if exists(download_path) and getsize(download_path) == int(
             piece_length[quality]
         ):
-            print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}")
+            print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}\n")
         else:
             if split_by_bytes:
                 chunk_range, chunk_size = generate_range_byte(
@@ -194,13 +194,13 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
                             if count + 1 == len(chunk_range):
                                 if downloaded_size == last_chunk_size:
                                     print(
-                                        f"\n{bcolors.OKGREEN}{fragment_file_name} already exists{bcolors.ENDC}"
+                                        f"\n{bcolors.OKGREEN}{fragment_file_name} already exists{bcolors.ENDC}\n"
                                     )
                                     continue
                             else:
                                 if downloaded_size == chunk_size:
                                     print(
-                                        f"\n{bcolors.OKGREEN}{fragment_file_name} already exists{bcolors.ENDC}"
+                                        f"\n{bcolors.OKGREEN}{fragment_file_name} already exists{bcolors.ENDC}\n"
                                     )
                                     continue
 
@@ -269,7 +269,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
                                     error := f"""
 {bcolors.FAIL}Failed to delete: {i} - get_turbo_download
 {err}{bcolors.ENDC}
-                                    """
+"""
                                 )
                                 log_error(error)
                                 with open(i, "wb"):
@@ -327,7 +327,7 @@ def start_download(
 
                 if r.status_code != 200 and r.status_code != 206:
                     print(
-                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {url}{bcolors.ENDC}"
+                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {url}{bcolors.ENDC}\n"
                     )
                     sleep(request_wait)
                 else:
@@ -370,14 +370,14 @@ def download(vid_ID):
         for i in range(request_retry):
             i += 1
             if i == request_retry:
-                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}")
+                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}\n")
 
             try:
                 r = get(vid_ID_url, timeout=request_timeout)
 
                 if r.status_code != 200:
                     print(
-                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}"
+                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}\n"
                     )
                     sleep(request_wait)
                 else:
@@ -424,7 +424,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             ).group(1)
         )
 
-        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}")
+        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}\n")
 
         resolution_option = {}
         quality_prefix = {}
@@ -494,7 +494,7 @@ Available resolution {available_resolution}
         else:
             downloaded_size = getsize(download_path)
             if downloaded_size == int(piece_length[quality]):
-                print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}")
+                print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}\n")
             else:
                 byte_range = f"{downloaded_size}-"
                 write_method = "ab"
@@ -560,7 +560,7 @@ def get_content_length(atob_domain, quality_prefix, atob_id):
 
             if r.status_code != 200 and r.status_code != 206:
                 print(
-                    f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {url}{bcolors.ENDC}"
+                    f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {url}{bcolors.ENDC}\n"
                 )
                 sleep(request_wait)
             else:
