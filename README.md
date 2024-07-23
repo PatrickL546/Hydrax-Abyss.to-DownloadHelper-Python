@@ -56,6 +56,7 @@ request_timeout = 180                 # Seconds to wait between bytes before tim
 request_retry = 60                    # Retry attempts
 request_wait = 6                      # Seconds to wait before retrying
 error_file = "Abyss_error.log"        # File name of error log
+enable_error_log = True               # Enable error logging to file
 
 turbo = False                         # Set "True" to multithread download, uses `max_quality` option
 turbo_squared = False                 # Set "True" to download all Vid_ID at the same time
