@@ -2,14 +2,14 @@ from base64 import b64decode
 from concurrent.futures import ThreadPoolExecutor, wait
 from json import loads
 from os import makedirs, remove, system
-from os.path import abspath, exists, expandvars, getsize, join
+from os.path import abspath, exists, expandvars, join
 from re import search
 from time import sleep
 
 from requests import RequestException, Timeout, get
 from tqdm import tqdm
 
-version = "v1.6"
+version = "v1.7"
 # 1 = 360p
 # 2 = 480p
 # 3 = 720p
@@ -133,7 +133,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
         file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
         download_path = join(abspath(download_directory), file_name)
 
-        if exists(download_path) and getsize(download_path) == int(
+        if exists(download_path) and get_size(download_path) == int(
             piece_length[quality]
         ):
             print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}\n")
@@ -189,7 +189,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
                                 )
                             )
                         else:
-                            downloaded_size = getsize(fragment_download_path)
+                            downloaded_size = get_size(fragment_download_path)
 
                             if count + 1 == len(chunk_range):
                                 if downloaded_size == last_chunk_size:
@@ -226,10 +226,10 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
                 ok_fragment = 0
                 for count, i in enumerate(fragment_list):
                     if count + 1 == len(fragment_list):
-                        if getsize(i) == last_chunk_size:
+                        if get_size(i) == last_chunk_size:
                             ok_fragment += 1
                     else:
-                        if getsize(i) == chunk_size:
+                        if get_size(i) == chunk_size:
                             ok_fragment += 1
 
                 if ok_fragment != len(fragment_list):
@@ -492,7 +492,7 @@ Available resolution {available_resolution}
                 write_method,
             )
         else:
-            downloaded_size = getsize(download_path)
+            downloaded_size = get_size(download_path)
             if downloaded_size == int(piece_length[quality]):
                 print(f"\n{bcolors.OKGREEN}{file_name} already exists{bcolors.ENDC}\n")
             else:
@@ -591,6 +591,13 @@ Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
     return content_length
 
 
+def get_size(file):
+    with open(file, "rb") as f:
+        size = f.read()
+
+    return len(size)
+
+
 def get_input():
     print("To download multiple videos at once, separate Vid_ID with space\n")
 
@@ -604,6 +611,7 @@ def turbo_download():
     print(f"""[Turbo Mode]
 {bcolors.WARNING}Abyss fragments by default are stored in "%TEMP%\\abyss_fragments"
 If fragments failed to get deleted, its data is wiped to save space
+It is safe to manually delete the left over fragments
 Download might slow down, restarting the program might help
 Set `turbo_squared = False` if you are having problems{bcolors.ENDC}
 """)
