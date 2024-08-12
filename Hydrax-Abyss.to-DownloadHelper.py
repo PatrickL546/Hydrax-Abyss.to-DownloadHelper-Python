@@ -599,6 +599,7 @@ def get_input():
     while True:
         vid_ID_list = list(filter(None, input("Enter Vid_ID: ").split(" ")))
         if vid_ID_list:
+            vid_ID_list = list(dict.fromkeys(vid_ID_list))
             return vid_ID_list
 
 
