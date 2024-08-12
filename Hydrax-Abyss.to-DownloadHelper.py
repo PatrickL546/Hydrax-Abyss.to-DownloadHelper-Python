@@ -87,51 +87,18 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
                 log_error(error)
                 sleep(request_wait)
 
-        atob_domain, atob_id = [
-            loads(
-                b64decode(
-                    search(
-                        r'PLAYER\(atob\("(.*?)"',
-                        vid_ID_text,
-                    ).group(1)
-                )
-            )[i]
-            for i in ["domain", "id"]
-        ]
-
-        piece_length_json = loads(
-            search(
-                r'({"pieceLength.+?});',
-                vid_ID_text,
-            ).group(1)
-        )
-
-        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}\n")
-
-        resolution_option = {}
-        quality_prefix = {}
-        piece_length = {}
-        if "sd" in piece_length_json.keys():
-            resolution_option.update({"1": "360p"})
-            quality_prefix.update({"1": ""})
-            piece_length.update({"1": get_content_length(atob_domain, "", atob_id)})
-        if "mHd" in piece_length_json.keys():
-            resolution_option.update({"2": "480p"})
-            quality_prefix.update({"2": ""})
-            piece_length.update({"2": get_content_length(atob_domain, "", atob_id)})
-        if "hd" in piece_length_json.keys():
-            resolution_option.update({"3": "720p"})
-            quality_prefix.update({"3": "www"})
-            piece_length.update({"3": get_content_length(atob_domain, "www", atob_id)})
-        if "fullHd" in piece_length_json.keys():
-            resolution_option.update({"4": "1080p"})
-            quality_prefix.update({"4": "whw"})
-            piece_length.update({"4": get_content_length(atob_domain, "whw", atob_id)})
-
-        available_resolution = [i for i in resolution_option.values()]
-        quality = max([i for i in resolution_option if i <= str(max_quality)])
-        file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
-        download_path = join(abspath(download_directory), file_name)
+        (
+            download_path,
+            piece_length,
+            quality,
+            file_name,
+            available_resolution,
+            atob_domain,
+            atob_id,
+            quality_prefix,
+            piece_length_json,
+            resolution_option,
+        ) = get_data(vid_ID_text, vid_ID)
 
         if exists(download_path) and get_size(download_path) == int(
             piece_length[quality]
@@ -405,51 +372,18 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
                 log_error(error)
                 sleep(request_wait)
 
-        atob_domain, atob_id = [
-            loads(
-                b64decode(
-                    search(
-                        r'PLAYER\(atob\("(.*?)"',
-                        vid_ID_text,
-                    ).group(1)
-                )
-            )[i]
-            for i in ["domain", "id"]
-        ]
-
-        piece_length_json = loads(
-            search(
-                r'({"pieceLength.+?});',
-                vid_ID_text,
-            ).group(1)
-        )
-
-        print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}\n")
-
-        resolution_option = {}
-        quality_prefix = {}
-        piece_length = {}
-        if "sd" in piece_length_json.keys():
-            resolution_option.update({"1": "360p"})
-            quality_prefix.update({"1": ""})
-            piece_length.update({"1": get_content_length(atob_domain, "", atob_id)})
-        if "mHd" in piece_length_json.keys():
-            resolution_option.update({"2": "480p"})
-            quality_prefix.update({"2": ""})
-            piece_length.update({"2": get_content_length(atob_domain, "", atob_id)})
-        if "hd" in piece_length_json.keys():
-            resolution_option.update({"3": "720p"})
-            quality_prefix.update({"3": "www"})
-            piece_length.update({"3": get_content_length(atob_domain, "www", atob_id)})
-        if "fullHd" in piece_length_json.keys():
-            resolution_option.update({"4": "1080p"})
-            quality_prefix.update({"4": "whw"})
-            piece_length.update({"4": get_content_length(atob_domain, "whw", atob_id)})
-
-        available_resolution = [i for i in resolution_option.values()]
-        quality = max([i for i in resolution_option if i <= str(max_quality)])
-        file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
-        download_path = join(abspath(download_directory), file_name)
+        (
+            download_path,
+            piece_length,
+            quality,
+            file_name,
+            available_resolution,
+            atob_domain,
+            atob_id,
+            quality_prefix,
+            piece_length_json,
+            resolution_option,
+        ) = get_data(vid_ID_text, vid_ID)
 
         if not automatic:
             print(f"""
@@ -519,6 +453,67 @@ Available resolution {available_resolution}
 """
         )
         log_error(error)
+
+
+def get_data(vid_ID_text, vid_ID):
+    atob_domain, atob_id = [
+        loads(
+            b64decode(
+                search(
+                    r'PLAYER\(atob\("(.*?)"',
+                    vid_ID_text,
+                ).group(1)
+            )
+        )[i]
+        for i in ["domain", "id"]
+    ]
+
+    piece_length_json = loads(
+        search(
+            r'({"pieceLength.+?});',
+            vid_ID_text,
+        ).group(1)
+    )
+
+    print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}\n")
+
+    resolution_option = {}
+    quality_prefix = {}
+    piece_length = {}
+    if "sd" in piece_length_json.keys():
+        resolution_option.update({"1": "360p"})
+        quality_prefix.update({"1": ""})
+        piece_length.update({"1": get_content_length(atob_domain, "", atob_id)})
+    if "mHd" in piece_length_json.keys():
+        resolution_option.update({"2": "480p"})
+        quality_prefix.update({"2": ""})
+        piece_length.update({"2": get_content_length(atob_domain, "", atob_id)})
+    if "hd" in piece_length_json.keys():
+        resolution_option.update({"3": "720p"})
+        quality_prefix.update({"3": "www"})
+        piece_length.update({"3": get_content_length(atob_domain, "www", atob_id)})
+    if "fullHd" in piece_length_json.keys():
+        resolution_option.update({"4": "1080p"})
+        quality_prefix.update({"4": "whw"})
+        piece_length.update({"4": get_content_length(atob_domain, "whw", atob_id)})
+
+    available_resolution = [i for i in resolution_option.values()]
+    quality = max([i for i in resolution_option if i <= str(max_quality)])
+    file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
+    download_path = join(abspath(download_directory), file_name)
+
+    return (
+        download_path,
+        piece_length,
+        quality,
+        file_name,
+        available_resolution,
+        atob_domain,
+        atob_id,
+        quality_prefix,
+        piece_length_json,
+        resolution_option,
+    )
 
 
 def generate_range_split(file_size, split):
