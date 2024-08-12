@@ -30,15 +30,17 @@
 
 - If the download was not completed. It will continue where it left off
 
+- Turbo mode. Takes priority if enabled
+
+![image](https://github.com/user-attachments/assets/4671400b-caaf-4264-8923-18ef3e643ffe)
+
+- Automatic mode
+
 ![image](https://github.com/user-attachments/assets/b4eb4462-42ba-43da-8a5b-626c63c44bac)
 
 - Manual mode
 
 ![image](https://github.com/user-attachments/assets/c5c73aba-3689-4178-82b0-5263f770c431)
-
-- Turbo mode
-
-![image](https://github.com/user-attachments/assets/4671400b-caaf-4264-8923-18ef3e643ffe)
 
 ## Customize
 
