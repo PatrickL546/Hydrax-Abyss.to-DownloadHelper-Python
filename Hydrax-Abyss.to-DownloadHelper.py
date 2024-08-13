@@ -26,7 +26,7 @@ request_wait = 6                      # Seconds to wait before retrying
 error_file = "Abyss_error.log"        # File name of error log
 enable_error_log = True               # Enable error logging to file
 
-turbo = False                         # Set "True" to multithread download, uses `max_quality` option
+turbo = True                         # Set "True" to multithread download, uses `max_quality` option
 turbo_squared = False                 # Set "True" to download all Vid_ID at the same time
 delete_fragment = True                # Set "False" to not delete downloaded fragments
 active_download = 10                  # Max active download connections
@@ -66,7 +66,11 @@ def get_turbo_download(vid_ID):
                     )
                     sleep(request_wait)
                 else:
-                    vid_ID_text = r.text
+                    soup = BeautifulSoup(r.text, 'html.parser')
+                    scripts = soup.find_all('script', string=re.compile(r'━┻'))
+                    for script in scripts:
+                                if '━┻' in script.string:
+                                    vid_ID_text = script.string
                     break
 
             except Timeout as err:
@@ -101,7 +105,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             quality_prefix,
             piece_length_json,
             resolution_option,
-        ) = get_data(vid_ID)
+        ) = get_data(vid_ID_text,vid_ID)
 
         if exists(download_path) and get_size(download_path) == int(
             piece_length[quality]
@@ -332,16 +336,6 @@ Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
         )
         log_error(error)
 
-def fetch_todecode(v):
-    url = f"https://abysscdn.com/?v={v}"
-    response = get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    scripts = soup.find_all('script', string=re.compile(r'━┻'))
-    for script in scripts:
-        if '━┻' in script.string:
-            return script.string
-    return None
-
 def download(vid_ID):
     try:
         vid_ID_url = f"https://abysscdn.com/?v={vid_ID}"
@@ -360,7 +354,11 @@ def download(vid_ID):
                     )
                     sleep(request_wait)
                 else:
-                    vid_ID_text = r.text
+                    soup = BeautifulSoup(r.text, 'html.parser')
+                    scripts = soup.find_all('script', string=re.compile(r'━┻'))
+                    for script in scripts:
+                                if '━┻' in script.string:
+                                    vid_ID_text = script.string
                     break
 
             except Timeout as err:
@@ -395,7 +393,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             quality_prefix,
             piece_length_json,
             resolution_option,
-        ) = get_data(vid_ID)
+        ) = get_data(vid_ID_text, vid_ID)
 
         if not automatic:
             print(f"""
@@ -467,13 +465,9 @@ Available resolution {available_resolution}
         log_error(error)
 
 
-def get_data(vid_ID):
-    todecode = fetch_todecode(vid_ID)
-    if not todecode:
-        print("No valid script tag found.")
-        return
-
-    decoded_string = decode(todecode)
+def get_data(script , vid_ID):
+    
+    decoded_string = decode(script)
     match = re.search(r'(?<=JSON\.parse\(atob\(")([^"]+)(?="\)\))', decoded_string)
     if match:
         base64_string = match.group(1)
