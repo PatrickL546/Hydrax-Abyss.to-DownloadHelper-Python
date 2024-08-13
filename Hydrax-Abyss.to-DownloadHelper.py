@@ -12,12 +12,12 @@ from bs4 import BeautifulSoup
 import re
 import six
 
-version = "v1.7"
+version = "v1.8"
 # 1 = 360p
 # 2 = 480p
 # 3 = 720p
 # 4 = 1080p
-max_quality = 4                       # Max resolution for automatic selection
+max_quality = 3                    # Max resolution for automatic selection
 automatic = False                      # Set "False" to select resolution manually
 download_directory = r""              # Set download directory, insert path inside ""
 request_timeout = 180                 # Seconds to wait between bytes before timeout
@@ -26,7 +26,7 @@ request_wait = 6                      # Seconds to wait before retrying
 error_file = "Abyss_error.log"        # File name of error log
 enable_error_log = True               # Enable error logging to file
 
-turbo = True                         # Set "True" to multithread download, uses `max_quality` option
+turbo = False                         # Set "True" to multithread download, uses `max_quality` option
 turbo_squared = False                 # Set "True" to download all Vid_ID at the same time
 delete_fragment = True                # Set "False" to not delete downloaded fragments
 active_download = 10                  # Max active download connections
@@ -71,8 +71,8 @@ def get_turbo_download(vid_ID):
                     for script in scripts:
                                 if '━┻' in script.string:
                                     vid_ID_text = script.string
-                    break
 
+                    break
             except Timeout as err:
                 print(
                     error := f"""
@@ -103,7 +103,6 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             atob_domain,
             atob_id,
             quality_prefix,
-            piece_length_json,
             resolution_option,
         ) = get_data(vid_ID_text,vid_ID)
 
@@ -391,7 +390,6 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             atob_domain,
             atob_id,
             quality_prefix,
-            piece_length_json,
             resolution_option,
         ) = get_data(vid_ID_text, vid_ID)
 
@@ -400,13 +398,13 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
 Downloading Vid_ID: {vid_ID}
 Available resolution {available_resolution}
 """)
-            if "360p" in piece_length_json.keys():
+            if "360p" in available_resolution:
                 print("[1] 360p")
-            if "480p" in piece_length_json.keys():
+            if "480p" in available_resolution:
                 print("[2] 480p")
-            if "720p" in piece_length_json.keys():
+            if "720p" in available_resolution:
                 print("[3] 720p")
-            if "1080p" in piece_length_json.keys():
+            if "1080p" in available_resolution:
                 print("[4] 1080p")
 
             while True:
@@ -467,6 +465,8 @@ Available resolution {available_resolution}
 
 def get_data(script , vid_ID):
     
+    
+
     decoded_string = decode(script)
     match = re.search(r'(?<=JSON\.parse\(atob\(")([^"]+)(?="\)\))', decoded_string)
     if match:
@@ -475,7 +475,6 @@ def get_data(script , vid_ID):
         json_data = loads(json_string)
         domain = json_data.get("domain", "")
         id = json_data.get("id", "")
-        piece_length_json = json_data
 
         resolution_option = {}
         quality_prefix = {}
@@ -511,7 +510,6 @@ def get_data(script , vid_ID):
             domain,
             id,
             quality_prefix,
-            piece_length_json,
             resolution_option,
         )
 
