@@ -5,9 +5,12 @@ from os import makedirs, remove, system
 from os.path import abspath, exists, expandvars, join
 from re import search
 from time import sleep
-
 from requests import RequestException, Timeout, get
 from tqdm import tqdm
+from lib.aadecode import decode
+from bs4 import BeautifulSoup
+import re
+import six
 
 version = "v1.7"
 # 1 = 360p
@@ -15,7 +18,7 @@ version = "v1.7"
 # 3 = 720p
 # 4 = 1080p
 max_quality = 4                       # Max resolution for automatic selection
-automatic = True                      # Set "False" to select resolution manually
+automatic = False                      # Set "False" to select resolution manually
 download_directory = r""              # Set download directory, insert path inside ""
 request_timeout = 180                 # Seconds to wait between bytes before timeout
 request_retry = 60                    # Retry attempts
@@ -98,7 +101,7 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             quality_prefix,
             piece_length_json,
             resolution_option,
-        ) = get_data(vid_ID_text, vid_ID)
+        ) = get_data(vid_ID)
 
         if exists(download_path) and get_size(download_path) == int(
             piece_length[quality]
@@ -329,6 +332,15 @@ Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
         )
         log_error(error)
 
+def fetch_todecode(v):
+    url = f"https://abysscdn.com/?v={v}"
+    response = get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    scripts = soup.find_all('script', string=re.compile(r'━┻'))
+    for script in scripts:
+        if '━┻' in script.string:
+            return script.string
+    return None
 
 def download(vid_ID):
     try:
@@ -383,20 +395,20 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
             quality_prefix,
             piece_length_json,
             resolution_option,
-        ) = get_data(vid_ID_text, vid_ID)
+        ) = get_data(vid_ID)
 
         if not automatic:
             print(f"""
 Downloading Vid_ID: {vid_ID}
 Available resolution {available_resolution}
 """)
-            if "sd" in piece_length_json.keys():
+            if "360p" in piece_length_json.keys():
                 print("[1] 360p")
-            if "mHd" in piece_length_json.keys():
+            if "480p" in piece_length_json.keys():
                 print("[2] 480p")
-            if "hd" in piece_length_json.keys():
+            if "720p" in piece_length_json.keys():
                 print("[3] 720p")
-            if "fullHd" in piece_length_json.keys():
+            if "1080p" in piece_length_json.keys():
                 print("[4] 1080p")
 
             while True:
@@ -455,65 +467,59 @@ Available resolution {available_resolution}
         log_error(error)
 
 
-def get_data(vid_ID_text, vid_ID):
-    atob_domain, atob_id = [
-        loads(
-            b64decode(
-                search(
-                    r'PLAYER\(atob\("(.*?)"',
-                    vid_ID_text,
-                ).group(1)
-            )
-        )[i]
-        for i in ["domain", "id"]
-    ]
+def get_data(vid_ID):
+    todecode = fetch_todecode(vid_ID)
+    if not todecode:
+        print("No valid script tag found.")
+        return
 
-    piece_length_json = loads(
-        search(
-            r'({"pieceLength.+?});',
-            vid_ID_text,
-        ).group(1)
-    )
+    decoded_string = decode(todecode)
+    match = re.search(r'(?<=JSON\.parse\(atob\(")([^"]+)(?="\)\))', decoded_string)
+    if match:
+        base64_string = match.group(1)
+        json_string = b64decode(base64_string).decode('utf-8')
+        json_data = loads(json_string)
+        domain = json_data.get("domain", "")
+        id = json_data.get("id", "")
+        piece_length_json = json_data
 
-    print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}\n")
+        resolution_option = {}
+        quality_prefix = {}
+        piece_length = {}
+        if "360p" in [source.get("label") for source in json_data.get("sources", [])]:
+            resolution_option.update({"1": "360p"})
+            quality_prefix.update({"1": ""})
+            piece_length.update({"1": get_content_length(domain, "", id)})
+        if "480p" in [source.get("label") for source in json_data.get("sources", [])]:
+            resolution_option.update({"2": "480p"})
+            quality_prefix.update({"2": ""})
+            piece_length.update({"2": get_content_length(domain, "", id)})
+        if "720p" in [source.get("label") for source in json_data.get("sources", [])]:
+            resolution_option.update({"3": "720p"})
+            quality_prefix.update({"3": "www"})
+            piece_length.update({"3": get_content_length(domain, "www", id)})
+        if "1080p" in [source.get("label") for source in json_data.get("sources", [])]:
+            resolution_option.update({"4": "1080p"})
+            quality_prefix.update({"4": "whw"})
+            piece_length.update({"4": get_content_length(domain, "whw", id)})
 
-    resolution_option = {}
-    quality_prefix = {}
-    piece_length = {}
-    if "sd" in piece_length_json.keys():
-        resolution_option.update({"1": "360p"})
-        quality_prefix.update({"1": ""})
-        piece_length.update({"1": get_content_length(atob_domain, "", atob_id)})
-    if "mHd" in piece_length_json.keys():
-        resolution_option.update({"2": "480p"})
-        quality_prefix.update({"2": ""})
-        piece_length.update({"2": get_content_length(atob_domain, "", atob_id)})
-    if "hd" in piece_length_json.keys():
-        resolution_option.update({"3": "720p"})
-        quality_prefix.update({"3": "www"})
-        piece_length.update({"3": get_content_length(atob_domain, "www", atob_id)})
-    if "fullHd" in piece_length_json.keys():
-        resolution_option.update({"4": "1080p"})
-        quality_prefix.update({"4": "whw"})
-        piece_length.update({"4": get_content_length(atob_domain, "whw", atob_id)})
+        available_resolution = [i for i in resolution_option.values()]
+        quality = max([i for i in resolution_option if i <= str(max_quality)])
+        file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
+        download_path = join(abspath(download_directory), file_name)
 
-    available_resolution = [i for i in resolution_option.values()]
-    quality = max([i for i in resolution_option if i <= str(max_quality)])
-    file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
-    download_path = join(abspath(download_directory), file_name)
-
-    return (
-        download_path,
-        piece_length,
-        quality,
-        file_name,
-        available_resolution,
-        atob_domain,
-        atob_id,
-        quality_prefix,
-        piece_length_json,
-        resolution_option,
-    )
+        return (
+            download_path,
+            piece_length,
+            quality,
+            file_name,
+            available_resolution,
+            domain,
+            id,
+            quality_prefix,
+            piece_length_json,
+            resolution_option,
+        )
 
 
 def generate_range_split(file_size, split):

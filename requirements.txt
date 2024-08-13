@@ -1,2 +1,4 @@
+six
+beautifulsoup4
 Requests==2.32.3
 tqdm==4.66.4
