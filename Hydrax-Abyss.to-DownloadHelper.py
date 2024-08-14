@@ -10,11 +10,11 @@ from requests import RequestException, Timeout, get
 from STPyV8 import JSContext
 from tqdm import tqdm
 
-version = "v1.7"
+version = "v2.0"
 # 1 = 360p
 # 2 = 720p
 # 3 = 1080p
-max_quality = 3                       # Max resolution for automatic selection
+max_quality = 3                       # Max resolution for automatic selection, or uses minimum available
 automatic = True                      # Set "False" to select resolution manually
 download_directory = r""              # Set download directory, insert path inside ""
 request_timeout = 180                 # Seconds to wait between bytes before timeout
@@ -44,20 +44,22 @@ def log_error(err):
 
 def get_turbo_download(vid_ID_text):
     try:
-        vid_ID = "Place Holder"
         (
+            vid_ID,
+            available_resolution,
+            values,
+            resolution_option,
+            extension,
             download_path,
             piece_length,
             quality,
             file_name,
-            available_resolution,
             atob_domain,
-            atob_id,
             quality_prefix,
-            piece_length_json,
-            resolution_option,
-        ) = get_data(vid_ID_text, vid_ID)
+            atob_ID,
+        ) = get_data(vid_ID_text)
 
+        download_url = f"https://{atob_domain}/{quality_prefix[quality]}{atob_ID}"
         if exists(download_path) and get_size(download_path) == int(
             piece_length[quality]
         ):
@@ -75,7 +77,9 @@ def get_turbo_download(vid_ID_text):
             range_min, range_max = chunk_range[-1].split("-")
             last_chunk_size = (int(range_max) - int(range_min)) + 1
 
-            makedirs(expandvars("%TEMP%\\abyss_fragments"), exist_ok=True)
+            if fragments_to_temp:
+                makedirs(expandvars("%TEMP%\\abyss_fragments"), exist_ok=True)
+
             while True:
                 with ThreadPoolExecutor(max_workers=active_download) as pool:
                     fragment_list = []
@@ -103,14 +107,11 @@ def get_turbo_download(vid_ID_text):
                                     start_download,
                                     vid_ID,
                                     available_resolution,
-                                    atob_domain,
-                                    atob_id,
-                                    quality_prefix,
-                                    quality,
-                                    fragment_download_path,
-                                    fragment_file_name,
                                     byte_range,
+                                    download_url,
+                                    fragment_download_path,
                                     write_method,
+                                    fragment_file_name,
                                 )
                             )
                         else:
@@ -135,14 +136,11 @@ def get_turbo_download(vid_ID_text):
                                     start_download,
                                     vid_ID,
                                     available_resolution,
-                                    atob_domain,
-                                    atob_id,
-                                    quality_prefix,
-                                    quality,
-                                    fragment_download_path,
-                                    fragment_file_name,
                                     byte_range,
+                                    download_url,
+                                    fragment_download_path,
                                     write_method,
+                                    fragment_file_name,
                                 )
                             )
 
@@ -197,12 +195,12 @@ def get_turbo_download(vid_ID_text):
 """
                                 )
                                 log_error(error)
+
                                 with open(i, "wb"):
                                     pass
 
                                 global failed_delete
                                 failed_delete = True
-
                     break
 
     except Exception as err:
@@ -218,20 +216,16 @@ def get_turbo_download(vid_ID_text):
 def start_download(
     vid_ID,
     available_resolution,
-    atob_domain,
-    atob_id,
-    quality_prefix,
-    quality,
-    download_path,
-    file_name,
     byte_range,
+    download_url,
+    download_path,
     write_method,
+    file_name,
 ):
     try:
         if automatic and not turbo:
-            print(f"Available resolution {vid_ID}: {available_resolution}")
+            print(f"\nAvailable resolution {vid_ID}: {available_resolution}")
 
-        url = f"https://{atob_domain}/{quality_prefix[quality]}{atob_id}"
         headers = {"Referer": "https://abysscdn.com/", "Range": f"bytes={byte_range}"}
         for i in range(request_retry):
             i += 1
@@ -239,7 +233,9 @@ def start_download(
                 raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}")
 
             try:
-                r = get(url, headers=headers, stream=True, timeout=request_timeout)
+                r = get(
+                    download_url, headers=headers, stream=True, timeout=request_timeout
+                )
 
                 with tqdm.wrapattr(
                     open(download_path, write_method),
@@ -255,7 +251,7 @@ def start_download(
 
                 if r.status_code != 200 and r.status_code != 206:
                     print(
-                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {url}{bcolors.ENDC}\n"
+                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {download_url}{bcolors.ENDC}\n"
                     )
                     sleep(request_wait)
                 else:
@@ -264,9 +260,9 @@ def start_download(
             except Timeout as err:
                 print(
                     error := f"""
-{bcolors.WARNING}Connection timed out - start_download - {url} - {vid_ID}
+{bcolors.WARNING}Connection timed out - start_download - {download_url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
+Retrying {i}/{request_retry}... {download_url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -274,9 +270,9 @@ Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
             except RequestException as err:
                 print(
                     error := f"""
-{bcolors.WARNING}Request exception - start_download - {url} - {vid_ID}
+{bcolors.WARNING}Request exception - start_download - {download_url} - {vid_ID}
 {err}
-Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
+Retrying {i}/{request_retry}... {download_url}{bcolors.ENDC}
 """
                 )
                 log_error(error)
@@ -293,41 +289,46 @@ Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
 
 def download(vid_ID_text):
     try:
-        vid_ID = "Place Holder"
         (
+            vid_ID,
+            available_resolution,
+            values,
+            resolution_option,
+            extension,
             download_path,
             piece_length,
             quality,
             file_name,
-            available_resolution,
             atob_domain,
-            atob_id,
             quality_prefix,
-            piece_length_json,
-            resolution_option,
-        ) = get_data(vid_ID_text, vid_ID)
+            atob_ID,
+        ) = get_data(vid_ID_text)
 
+        download_url = f"https://{atob_domain}/{quality_prefix[quality]}{atob_ID}"
         if not automatic:
             print(f"""
 Downloading Vid_ID: {vid_ID}
 Available resolution {available_resolution}
 """)
-            if "sd" in piece_length_json.keys():
+            if "360p" in values:
                 print("[1] 360p")
-            if "mHd" in piece_length_json.keys():
-                print("[2] 480p")
-            if "hd" in piece_length_json.keys():
-                print("[3] 720p")
-            if "fullHd" in piece_length_json.keys():
-                print("[4] 1080p")
+            if "720p" in values:
+                print("[2] 720p")
+            if "1080p" in values:
+                print("[3] 1080p")
 
             while True:
                 resolution_selected = input("Select option: ")
 
                 if resolution_selected in resolution_option:
                     quality = resolution_selected
-                    file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
+                    file_name = (
+                        f"{vid_ID}_{resolution_option[quality]}.{extension[quality]}"
+                    )
                     download_path = join(abspath(download_directory), file_name)
+                    download_url = (
+                        f"https://{atob_domain}/{quality_prefix[quality]}{atob_ID}"
+                    )
                     break
                 else:
                     print(f"{bcolors.WARNING}Select a valid option{bcolors.ENDC}")
@@ -338,14 +339,11 @@ Available resolution {available_resolution}
             start_download(
                 vid_ID,
                 available_resolution,
-                atob_domain,
-                atob_id,
-                quality_prefix,
-                quality,
-                download_path,
-                file_name,
                 byte_range,
+                download_url,
+                download_path,
                 write_method,
+                file_name,
             )
         else:
             downloaded_size = get_size(download_path)
@@ -357,14 +355,11 @@ Available resolution {available_resolution}
                 start_download(
                     vid_ID,
                     available_resolution,
-                    atob_domain,
-                    atob_id,
-                    quality_prefix,
-                    quality,
-                    download_path,
-                    file_name,
                     byte_range,
+                    download_url,
+                    download_path,
                     write_method,
+                    file_name,
                 )
 
     except Exception as err:
@@ -486,64 +481,74 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
     return vid_ID_list_text
 
 
-def get_data(vid_ID_text, vid_ID):
-    atob_domain, atob_id = [
-        loads(
-            b64decode(
-                search(
-                    r'PLAYER\(atob\("(.*?)"',
-                    vid_ID_text,
-                ).group(1)
-            )
-        )[i]
-        for i in ["domain", "id"]
-    ]
+def get_data(vid_ID_text):
+    atob = search(
+        r'atob\("(.+?)"\)',
+        vid_ID_text,
+    ).group(1)
+    decoded_atob = b64decode(atob)
+    json = loads(decoded_atob)
+    values = str(json.values())
 
-    piece_length_json = loads(
-        search(
-            r'({"pieceLength.+?});',
-            vid_ID_text,
-        ).group(1)
-    )
+    sources = json["sources"]
+    vid_ID = json["slug"]
+    atob_ID = json["id"]
+    atob_domain = json["domain"]
 
     print(f"\n{bcolors.BOLD}Getting content length: {vid_ID}{bcolors.ENDC}\n")
 
     resolution_option = {}
     quality_prefix = {}
     piece_length = {}
-    if "sd" in piece_length_json.keys():
+    extension = {}
+    if "360p" in values:
         resolution_option.update({"1": "360p"})
         quality_prefix.update({"1": ""})
-        piece_length.update({"1": get_content_length(atob_domain, "", atob_id)})
-    if "mHd" in piece_length_json.keys():
-        resolution_option.update({"2": "480p"})
-        quality_prefix.update({"2": ""})
-        piece_length.update({"2": get_content_length(atob_domain, "", atob_id)})
-    if "hd" in piece_length_json.keys():
-        resolution_option.update({"3": "720p"})
-        quality_prefix.update({"3": "www"})
-        piece_length.update({"3": get_content_length(atob_domain, "www", atob_id)})
-    if "fullHd" in piece_length_json.keys():
-        resolution_option.update({"4": "1080p"})
-        quality_prefix.update({"4": "whw"})
-        piece_length.update({"4": get_content_length(atob_domain, "whw", atob_id)})
+        piece_length.update({"1": get_content_length(atob_domain, "", atob_ID)})
+        extension.update({"1": search(r"360p.+?type': '(.+?)'", str(sources)).group(1)})
+    if "720p" in values:
+        resolution_option.update({"2": "720p"})
+        quality_prefix.update({"2": "www"})
+        piece_length.update({"2": get_content_length(atob_domain, "www", atob_ID)})
+        extension.update({"2": search(r"720p.+?type': '(.+?)'", str(sources)).group(1)})
+    if "1080p" in values:
+        resolution_option.update({"3": "1080p"})
+        quality_prefix.update({"3": "whw"})
+        piece_length.update({"3": get_content_length(atob_domain, "whw", atob_ID)})
+        extension.update(
+            {"3": search(r"1080p.+?type': '(.+?)'", str(sources)).group(1)}
+        )
 
-    available_resolution = [i for i in resolution_option.values()]
-    quality = max([i for i in resolution_option if i <= str(max_quality)])
-    file_name = f"{vid_ID}_{resolution_option[quality]}.mp4"
+    available_resolution = ", ".join([i for i in resolution_option.values()])
+
+    global max_quality
+    if str(max_quality) not in ["1", "2", "3"]:
+        print(
+            f"""{bcolors.WARNING}Invalid max_quality: "{max_quality}", using "3"{bcolors.ENDC}"""
+        )
+        max_quality = 3
+
+    try:
+        quality = max([i for i in resolution_option if i <= str(max_quality)])
+    except Exception:
+        quality = min(resolution_option.keys())
+
+    file_name = f"{vid_ID}_{resolution_option[quality]}.{extension[quality]}"
     download_path = join(abspath(download_directory), file_name)
 
     return (
+        vid_ID,
+        available_resolution,
+        values,
+        resolution_option,
+        extension,
         download_path,
         piece_length,
         quality,
         file_name,
-        available_resolution,
         atob_domain,
-        atob_id,
         quality_prefix,
-        piece_length_json,
-        resolution_option,
+        atob_ID,
     )
 
 
@@ -573,8 +578,8 @@ def generate_range_byte(file_size, chunk_size):
     return chunk_range, chunk_size
 
 
-def get_content_length(atob_domain, quality_prefix, atob_id):
-    url = f"https://{atob_domain}/{quality_prefix}{atob_id}"
+def get_content_length(atob_domain, quality_prefix, atob_ID):
+    url = f"https://{atob_domain}/{quality_prefix}{atob_ID}"
     headers = {"Referer": "https://abysscdn.com/", "Range": "bytes=0-1"}
     for i in range(request_retry):
         i += 1
@@ -625,6 +630,9 @@ def get_size(file):
 
 
 def get_input():
+    print(
+        f"{bcolors.WARNING}If download slows down, try restarting the program{bcolors.ENDC}\n"
+    )
     print("To download multiple videos at once, separate Vid_ID with space\n")
 
     while True:
@@ -636,13 +644,9 @@ def get_input():
 
 def turbo_download():
     if turbo_squared:
-        print(f"{bcolors.FAIL}[Turbo Mode Squared]{bcolors.ENDC}")
+        print(f"{bcolors.FAIL}{bcolors.BOLD}[Turbo Mode Squared]{bcolors.ENDC}")
     else:
-        print(f"{bcolors.OKBLUE}[Turbo Mode]{bcolors.ENDC}")
-
-    print(
-        f"{bcolors.WARNING}If download slows down, try restarting the program{bcolors.ENDC}\n"
-    )
+        print(f"{bcolors.OKGREEN}{bcolors.BOLD}[Turbo Mode]{bcolors.ENDC}")
 
     vid_ID_list = get_input()
     vid_ID_list_text = get_vid_ID_text(vid_ID_list)
@@ -656,7 +660,7 @@ def turbo_download():
 
 
 def automatic_download():
-    print(f"{bcolors.OKBLUE}[Automatic Mode]{bcolors.ENDC}")
+    print(f"{bcolors.OKGREEN}{bcolors.BOLD}[Automatic Mode]{bcolors.ENDC}")
 
     vid_ID_list = get_input()
     vid_ID_list_text = get_vid_ID_text(vid_ID_list)
@@ -667,7 +671,7 @@ def automatic_download():
 
 def manual_download():
     print(
-        f"{bcolors.OKBLUE}[Manual Mode]{bcolors.ENDC} {bcolors.WARNING}Simultaneous download not available{bcolors.ENDC}"
+        f"{bcolors.OKGREEN}{bcolors.BOLD}[Manual Mode]{bcolors.ENDC} {bcolors.WARNING}Simultaneous download not available{bcolors.ENDC}"
     )
 
     vid_ID_list = get_input()
