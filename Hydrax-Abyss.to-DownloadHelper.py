@@ -11,29 +11,25 @@ from tqdm import tqdm
 
 version = "v1.7"
 # 1 = 360p
-# 2 = 480p
-# 3 = 720p
-# 4 = 1080p
-max_quality = 4                       # Max resolution for automatic selection
+# 2 = 720p
+# 3 = 1080p
+max_quality = 3                       # Max resolution for automatic selection
 automatic = True                      # Set "False" to select resolution manually
 download_directory = r""              # Set download directory, insert path inside ""
 request_timeout = 180                 # Seconds to wait between bytes before timeout
 request_retry = 60                    # Retry attempts
 request_wait = 6                      # Seconds to wait before retrying
-error_file = "Abyss_error.log"        # File name of error log
-enable_error_log = True               # Enable error logging to file
+error_file = "Abyss_error.log"        # File name of error log, insert name inside ""
+enable_error_log = True               # Set "True" to enable error logging to file
 
-turbo = False                         # Set "True" to multithread download, uses `max_quality` option
+turbo = True                          # Set "True" to multithread download
 turbo_squared = False                 # Set "True" to download all Vid_ID at the same time
-delete_fragment = True                # Set "False" to not delete downloaded fragments
+delete_fragment = True                # Set "True" to delete downloaded fragments
 active_download = 10                  # Max active download connections
-fragments_to_temp = True              # Set "False" to download fragments in `download_directory`
+fragments_to_temp = True              # Set "False" to download fragments in `download_directory` instead of `%TEMP%`
 
-split_by_bytes = True                 # Set "False" to split by fragment amount
-                                      # If `split_by_bytes` is "True", fragment will be split by `turbo_chunk_size_bytes`
-                                      # It will generate an arbitrary number of fragment files with file size `turbo_chunk_size_bytes`
-                                      # Otherwise it will generate fixed number of fragment files `turbo_fragment`
-                                      # Each fragment will have an arbitrary file size
+split_by_bytes = True                 # Set "True" to split by bytes with size `turbo_chunk_size_bytes`
+                                      # Set "False" to split by fragment files in amount of files `turbo_fragment`
 turbo_chunk_size_bytes = 65536 * 128  # Size of each fragment in bytes
 # Or
 turbo_fragment = 60                   # Number of fragment files the video will get divided into
