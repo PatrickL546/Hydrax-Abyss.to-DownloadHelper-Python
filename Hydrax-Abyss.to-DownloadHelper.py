@@ -7,6 +7,7 @@ from re import search
 from time import sleep
 
 from requests import RequestException, Timeout, get
+from STPyV8 import JSContext
 from tqdm import tqdm
 
 version = "v1.7"
@@ -41,48 +42,9 @@ def log_error(err):
             f.write(f"{err}\n")
 
 
-def get_turbo_download(vid_ID):
+def get_turbo_download(vid_ID_text):
     try:
-        vid_ID_url = f"https://abysscdn.com/?v={vid_ID}"
-
-        for i in range(request_retry):
-            i += 1
-            if i == request_retry:
-                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}\n")
-
-            try:
-                r = get(vid_ID_url, timeout=request_timeout)
-
-                if r.status_code != 200:
-                    print(
-                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}\n"
-                    )
-                    sleep(request_wait)
-                else:
-                    vid_ID_text = r.text
-                    break
-
-            except Timeout as err:
-                print(
-                    error := f"""
-{bcolors.WARNING}Connection timed out - get_turbo_download - {vid_ID_url} - {vid_ID}
-{err}
-Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
-"""
-                )
-                log_error(error)
-                sleep(request_wait)
-            except RequestException as err:
-                print(
-                    error := f"""
-{bcolors.WARNING}Request exception - get_turbo_download - {vid_ID_url} - {vid_ID}
-{err}
-Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
-"""
-                )
-                log_error(error)
-                sleep(request_wait)
-
+        vid_ID = "Place Holder"
         (
             download_path,
             piece_length,
@@ -238,6 +200,9 @@ Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
                                 with open(i, "wb"):
                                     pass
 
+                                global failed_delete
+                                failed_delete = True
+
                     break
 
     except Exception as err:
@@ -326,48 +291,9 @@ Retrying {i}/{request_retry}... {url}{bcolors.ENDC}
         log_error(error)
 
 
-def download(vid_ID):
+def download(vid_ID_text):
     try:
-        vid_ID_url = f"https://abysscdn.com/?v={vid_ID}"
-
-        for i in range(request_retry):
-            i += 1
-            if i == request_retry:
-                raise Exception(f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}\n")
-
-            try:
-                r = get(vid_ID_url, timeout=request_timeout)
-
-                if r.status_code != 200:
-                    print(
-                        f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}\n"
-                    )
-                    sleep(request_wait)
-                else:
-                    vid_ID_text = r.text
-                    break
-
-            except Timeout as err:
-                print(
-                    error := f"""
-{bcolors.WARNING}Connection timed out - download - {vid_ID_url} - {vid_ID}
-{err}
-Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
-"""
-                )
-                log_error(error)
-                sleep(request_wait)
-            except RequestException as err:
-                print(
-                    error := f"""
-{bcolors.WARNING}Request exception - download - {vid_ID_url} - {vid_ID}
-{err}
-Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
-"""
-                )
-                log_error(error)
-                sleep(request_wait)
-
+        vid_ID = "Place Holder"
         (
             download_path,
             piece_length,
@@ -449,6 +375,115 @@ Available resolution {available_resolution}
 """
         )
         log_error(error)
+
+
+def aadecode(r_text):
+    encoded = search(r"(ﾟωﾟﾉ=.+?) \('_'\);", r_text).group(1) + ".toString()"
+
+    with JSContext() as ctxt:
+        return ctxt.eval(encoded)
+
+
+def get_vid_ID_text(vid_ID_list):
+    print(f"\n{bcolors.BOLD}Getting Vid_ID text{bcolors.ENDC}\n")
+
+    vid_ID_list_text = []
+    for vid_ID in vid_ID_list:
+        try:
+            vid_ID_url = f"https://abysscdn.com/?v={vid_ID}"
+            referer = "https://abyss.to/"
+            attempted = False
+
+            for i in range(request_retry):
+                i += 1
+                if i == request_retry:
+                    raise Exception(
+                        f"\n{bcolors.FAIL}Reached max retry{bcolors.ENDC}\n"
+                    )
+
+                try:
+                    r = get(
+                        vid_ID_url,
+                        headers={"Referer": f"{referer}"},
+                        timeout=request_timeout,
+                    )
+
+                    if r.status_code != 200:
+                        print(
+                            f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}\n"
+                        )
+                        sleep(request_wait)
+                    else:
+                        if not search(r"Invalid embedded domain name", r.text):
+                            vid_ID_list_text.append(aadecode(r.text))
+                            break
+                        else:
+                            while True:
+                                if attempted:
+                                    print(
+                                        f"{bcolors.WARNING}Failed. Make sure you are using the correct URL{bcolors.ENDC}"
+                                    )
+
+                                url = input(
+                                    f"""Enter origin URL of "{vid_ID}", or enter "skip": """
+                                )
+
+                                if url == "skip":
+                                    break
+
+                                try:
+                                    referer = search(
+                                        r"(https?://[^/]+?)[:/]", url
+                                    ).group(1)
+
+                                    attempted = True
+
+                                    break
+                                except Exception:
+                                    print(
+                                        f"{bcolors.WARNING}Enter a valid URL, e.g. https://abyss.to/{bcolors.ENDC}"
+                                    )
+
+                                    attempted = False
+
+                            if url == "skip":
+                                break
+
+                            print(
+                                f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}\n"
+                            )
+
+                except Timeout as err:
+                    print(
+                        error := f"""
+{bcolors.WARNING}Connection timed out - get_vid_ID_text - {vid_ID_url} - {vid_ID}
+{err}
+Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
+"""
+                    )
+                    log_error(error)
+                    sleep(request_wait)
+                except RequestException as err:
+                    print(
+                        error := f"""
+{bcolors.WARNING}Request exception - get_vid_ID_text - {vid_ID_url} - {vid_ID}
+{err}
+Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}
+"""
+                    )
+                    log_error(error)
+                    sleep(request_wait)
+
+        except Exception as err:
+            print(
+                error := f"""
+{bcolors.FAIL}Failed to get Vid_ID text: {vid_ID} - get_vid_ID_text
+{err}{bcolors.ENDC}
+"""
+            )
+            log_error(error)
+
+    return vid_ID_list_text
 
 
 def get_data(vid_ID_text, vid_ID):
@@ -605,30 +640,29 @@ def turbo_download():
     else:
         print(f"{bcolors.OKBLUE}[Turbo Mode]{bcolors.ENDC}")
 
-    print(f"""{bcolors.WARNING}Abyss fragments by default are stored in "%TEMP%\\abyss_fragments"
-If fragments failed to get deleted, its data is wiped to save space
-It is safe to manually delete the left over fragments
-Download might slow down, restarting the program might help
-Set `turbo_squared = False` if you are having problems{bcolors.ENDC}
-""")
+    print(
+        f"{bcolors.WARNING}If download slows down, try restarting the program{bcolors.ENDC}\n"
+    )
 
     vid_ID_list = get_input()
+    vid_ID_list_text = get_vid_ID_text(vid_ID_list)
 
     if not turbo_squared:
-        for vid_ID in vid_ID_list:
-            get_turbo_download(vid_ID)
+        for vid_ID_text in vid_ID_list_text:
+            get_turbo_download(vid_ID_text)
     else:
         with ThreadPoolExecutor() as pool:
-            pool.map(get_turbo_download, vid_ID_list)
+            pool.map(get_turbo_download, vid_ID_list_text)
 
 
 def automatic_download():
     print(f"{bcolors.OKBLUE}[Automatic Mode]{bcolors.ENDC}")
 
     vid_ID_list = get_input()
+    vid_ID_list_text = get_vid_ID_text(vid_ID_list)
 
     with ThreadPoolExecutor() as pool:
-        pool.map(download, vid_ID_list)
+        pool.map(download, vid_ID_list_text)
 
 
 def manual_download():
@@ -637,9 +671,10 @@ def manual_download():
     )
 
     vid_ID_list = get_input()
+    vid_ID_list_text = get_vid_ID_text(vid_ID_list)
 
-    for vid_ID in vid_ID_list:
-        download(vid_ID)
+    for vid_ID_text in vid_ID_list_text:
+        download(vid_ID_text)
 
 
 def version_check():
@@ -686,6 +721,11 @@ if __name__ == "__main__":
         UNDERLINE = "\033[4m"
         ENDC = "\033[0m"
 
+    failed_delete = False
     main()
     print("\n" * 5)
+
+    if failed_delete and not fragments_to_temp:
+        print(f"{bcolors.WARNING}Leftover fragments are safe to delete{bcolors.ENDC}")
+
     input("Done! press Enter to exit\n")
