@@ -2,9 +2,6 @@
 
 # [Userscript downloader](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript)
 
-> [!WARNING]  
-> Outdated and broken due to new update
-
 ## Requirements
 
 - Vid_ID of the video. Use my [Userscript](https://github.com/PatrickL546/Hydrax-Abyss.to-DownloadHelper-Userscript) or read [my guide](https://github.com/PatrickL546/How-to-download-hydrax-abyss.to) to get it
