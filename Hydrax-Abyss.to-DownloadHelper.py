@@ -37,7 +37,7 @@ turbo_fragment = 60                   # Number of fragment files the video will 
 
 def log_error(err):
     if enable_error_log:
-        with open(error_file, "a") as f:
+        with open(error_file, "a", encoding="utf8") as f:
             f.write(f"{err}\n")
 
 
@@ -600,8 +600,12 @@ def get_input():
 
 
 def turbo_download():
-    print(f"""[Turbo Mode]
-{bcolors.WARNING}Abyss fragments by default are stored in "%TEMP%\\abyss_fragments"
+    if turbo_squared:
+        print(f"{bcolors.FAIL}[Turbo Mode Squared]{bcolors.ENDC}")
+    else:
+        print(f"{bcolors.OKBLUE}[Turbo Mode]{bcolors.ENDC}")
+
+    print(f"""{bcolors.WARNING}Abyss fragments by default are stored in "%TEMP%\\abyss_fragments"
 If fragments failed to get deleted, its data is wiped to save space
 It is safe to manually delete the left over fragments
 Download might slow down, restarting the program might help
@@ -619,7 +623,7 @@ Set `turbo_squared = False` if you are having problems{bcolors.ENDC}
 
 
 def automatic_download():
-    print("[Automatic Mode]")
+    print(f"{bcolors.OKBLUE}[Automatic Mode]{bcolors.ENDC}")
 
     vid_ID_list = get_input()
 
@@ -629,7 +633,7 @@ def automatic_download():
 
 def manual_download():
     print(
-        f"[Manual Mode] {bcolors.WARNING}Simultaneous download not available{bcolors.ENDC}"
+        f"{bcolors.OKBLUE}[Manual Mode]{bcolors.ENDC} {bcolors.WARNING}Simultaneous download not available{bcolors.ENDC}"
     )
 
     vid_ID_list = get_input()
@@ -664,11 +668,10 @@ def main():
 
     if turbo:
         turbo_download()
+    elif automatic:
+        automatic_download()
     else:
-        if automatic:
-            automatic_download()
-        else:
-            manual_download()
+        manual_download()
 
 
 if __name__ == "__main__":
