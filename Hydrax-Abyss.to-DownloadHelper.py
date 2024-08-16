@@ -10,7 +10,7 @@ from requests import RequestException, Timeout, get
 from STPyV8 import JSContext
 from tqdm import tqdm
 
-version = "v2.0"
+version = "v2.1"
 # 1 = 360p
 # 2 = 720p
 # 3 = 1080p
@@ -372,13 +372,6 @@ Available resolution {available_resolution}
         log_error(error)
 
 
-def aadecode(r_text):
-    encoded = search(r"(ﾟωﾟﾉ=.+?) \('_'\);", r_text).group(1) + ".toString()"
-
-    with JSContext() as ctxt:
-        return ctxt.eval(encoded)
-
-
 def get_vid_ID_text(vid_ID_list):
     print(f"\n{bcolors.BOLD}Getting Vid_ID text{bcolors.ENDC}\n")
 
@@ -409,10 +402,27 @@ def get_vid_ID_text(vid_ID_list):
                         )
                         sleep(request_wait)
                     else:
-                        if not search(r"Invalid embedded domain name", r.text):
-                            vid_ID_list_text.append(aadecode(r.text))
+                        encoded_re = r"(ﾟωﾟﾉ=.+?) \('_'\);"
+                        atob_re = r"JSON\.parse\(atob\(\""
+                        invalid_re = r"Invalid embedded domain name"
+
+                        if not search(invalid_re, r.text) and search(atob_re, r.text):
+                            vid_ID_list_text.append(r.text)
                             break
-                        else:
+                        elif not search(invalid_re, r.text) and search(
+                            encoded_re, r.text
+                        ):
+                            encoded = (
+                                search(r"(ﾟωﾟﾉ=.+?) \('_'\);", r.text).group(1)
+                                + ".toString()"
+                            )
+
+                            with JSContext() as ctxt:
+                                decoded = ctxt.eval(encoded)
+
+                            vid_ID_list_text.append(decoded)
+                            break
+                        elif search(invalid_re, r.text):
                             while True:
                                 if attempted:
                                     print(
@@ -432,7 +442,6 @@ def get_vid_ID_text(vid_ID_list):
                                     ).group(1)
 
                                     attempted = True
-
                                     break
                                 except Exception:
                                     print(
@@ -446,6 +455,10 @@ def get_vid_ID_text(vid_ID_list):
 
                             print(
                                 f"\n{bcolors.WARNING}Retrying {i}/{request_retry}... {vid_ID_url}{bcolors.ENDC}\n"
+                            )
+                        else:
+                            print(
+                                f"{bcolors.WARNING}Cannot get Vid_ID text - {vid_ID}{bcolors.ENDC}"
                             )
 
                 except Timeout as err:
